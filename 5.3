@@ -1,62 +1,63 @@
-const express = require('express');
+1. Sample Inserts (MongoDB Shell)
+
+db.products.insertMany([
+  {
+    name: "Running Shoes",
+    price: 120,
+    category: "Footwear",
+    variants: [
+      { color: "Red", size: "M", stock: 10 },
+      { color: "Blue", size: "L", stock: 5 }
+    ]
+  },
+  {
+    name: "Winter Jacket",
+    price: 200,
+    category: "Apparel",
+    variants: [
+      { color: "Black", size: "S", stock: 8 },
+      { color: "Gray", size: "M", stock: 12 }
+    ]
+  },
+  {
+    name: "Smartphone",
+    price: 699,
+    category: "Electronics",
+    variants: []
+  }
+])
+
+2. Mongoose Model
+
 const mongoose = require('mongoose');
-const app = express();
 
-app.use(express.json());
+const variantSchema = new mongoose.Schema({
+  color: String,
+  size: String,
+  stock: Number
+}, { _id: true });
 
-// --- Mongoose Model ---
-const studentSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  age: { type: Number, required: true },
-  course: { type: String, required: true }
+const productSchema = new mongoose.Schema({
+  name: String,
+  price: Number,
+  category: String,
+  variants: [variantSchema]
 });
-const Student = mongoose.model('Student', studentSchema);
 
-// --- Controller functions (normally in controllers/studentController.js) ---
-const getAllStudents = async (req, res) => {
-  try {
-    const students = await Student.find({});
-    res.status(200).json(students);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-const getStudentById = async (req, res) => {
-  try {
-    const student = await Student.findById(req.params.id);
-    if (!student) return res.status(404).json({ message: "Student not found" });
-    res.status(200).json(student);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-const createStudent = async (req, res) => {
-  try {
-    const student = new Student(req.body);
-    await student.save();
-    res.status(201).json(student);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-};
-const deleteStudentById = async (req, res) => {
-  try {
-    const deleted = await Student.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ message: "Student not found" });
-    res.status(200).json({ message: "Student deleted", student: deleted });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
+const Product = mongoose.model('Product', productSchema);
 
-// --- Route definitions (normally routes/studentRoutes.js) ---
-app.get('/students', getAllStudents);
-app.get('/students/:id', getStudentById);
-app.post('/students', createStudent);
-app.delete('/students/:id', deleteStudentById);
+module.exports = Product;
 
-// --- DB connect and start server ---
-mongoose.connect('mongodb://localhost:27017/studentdb', {
-  useNewUrlParser: true, useUnifiedTopology: true
-});
-app.listen(3000, () => console.log('Server running on port 3000'));
+
+3. Example Queries
+Get all products:
+
+db.products.find()
+
+or (Mongoose):
+
+Product.find({})
+
+Filter by category ("Electronics"):
+
+db.products.find({ category: "Electronics" })
